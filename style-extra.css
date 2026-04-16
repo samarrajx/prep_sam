@@ -317,11 +317,7 @@ body.focus-mode #app-header {
 body.focus-mode #bottom-nav {
   transform: translateY(150%);
 }
-body.focus-mode .tab-bar {
-  top: -100px;
-  opacity: 0;
-  pointer-events: none;
-}
+
 
 /* ── EXIT FOCUS BUTTON ── */
 #exit-focus-btn {
@@ -349,39 +345,7 @@ body.focus-mode #exit-focus-btn {
   transform: translateY(0);
 }
 
-/* ── STICKY TAB BAR (Adjusted for Header) ── */
-.tab-bar {
-  position: sticky;
-  top: 56px; /* Stick below header */
-  z-index: 800;
-  background: rgba(8, 11, 15, 0.82); /* Glassy var(--bg) */
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Horizontally scrollable on mobile */
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;           /* Firefox */
-  -ms-overflow-style: none;        /* IE/Edge legacy */
-  /* Preserve bottom border from original via box-shadow so border isn't clipped */
-  box-shadow: 0 1px 0 0 var(--border), 0 4px 20px 0 rgba(0,0,0,.3);
-  padding-top: 4px;
-}
-.tab-bar::-webkit-scrollbar { display: none; }
-.light-theme .tab-bar { background: rgba(248, 250, 252, 0.82); }
-
 /* ── TAP TARGETS ── */
-.tab {
-  min-height: 48px;
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  padding: 12px 16px;
-  touch-action: manipulation;
-}
-
 .tday {
   min-width: 48px;
   min-height: 56px;
@@ -564,14 +528,9 @@ body.focus-mode #exit-focus-btn {
     gap: 12px;
   }
 
-  .tab {
-    padding: 12px 12px;
-    font-size: 11px;
-  }
 }
 
 /* ── FOCUS STYLES FOR ACCESSIBILITY ── */
-.tab:focus-visible,
 .tday:focus-visible,
 #pwa-install-btn:focus-visible,
 #pwa-dismiss-btn:focus-visible {

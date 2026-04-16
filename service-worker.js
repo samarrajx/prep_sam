@@ -5,7 +5,7 @@
 
 'use strict';
 
-const CACHE_NAME = 'mma-prep-v2';
+const CACHE_NAME = 'mma-prep-v3';
 
 // Essential files for offline fallback
 const PRECACHE_URLS = [

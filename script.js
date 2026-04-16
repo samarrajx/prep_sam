@@ -17,7 +17,6 @@ function vibrateTap() {
 function showOverview() {
   vibrateTap();
   document.querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
   
   const panel = document.getElementById('overview-panel');
@@ -45,22 +44,17 @@ function showDay(index, element, source) {
   exitFocusMode();
 
   // Save scroll position for currently active day before switching
-  const currentTab = document.querySelector('.tab.active');
-  if (currentTab) {
-    const currentIndex = Array.from(document.querySelectorAll('.tab')).indexOf(currentTab);
+  const currentActiveNav = document.querySelector('.bnav-item.active');
+  if (currentActiveNav) {
+    const currentIndex = Array.from(document.querySelectorAll('.bnav-item')).indexOf(currentActiveNav);
     scrollMap.set(currentIndex, window.scrollY);
   }
 
   document.querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
 
   const panel = document.getElementById('dp-' + index);
   if (panel) panel.classList.add('active');
-  
-  // Sync Top Tabs
-  const topTabs = document.querySelectorAll('.tab');
-  if (topTabs[index]) topTabs[index].classList.add('active');
 
   // Sync Bottom Nav
   const bnavs = document.querySelectorAll('.bnav-item');
@@ -90,24 +84,21 @@ function toggle(element) {
 function restoreLastDay() {
   try {
     const saved = localStorage.getItem('samar_last_day');
+    const bnavs = document.querySelectorAll('.bnav-item');
+    
     if (saved !== null) {
       const index = parseInt(saved, 10);
-      const tab = document.querySelectorAll('.tab')[index];
-      if (tab) {
-        showDay(index, tab);
+      if (bnavs[index]) {
+        showDay(index, bnavs[index]);
         return;
       }
     }
     
     // Fallback: Pick today's day of the week
     const now = new Date();
-    // getDay() is 0 (Sun) to 6 (Sat)
-    // App index 0 is Mon, so we shift: (day + 6) % 7
     const todayIndex = (now.getDay() + 6) % 7;
-    const todayTab = document.querySelectorAll('.tab')[todayIndex];
-    if (todayTab) {
-      // Don't vibrate on initial auto-select to avoid startle
-      showDay(todayIndex, todayTab);
+    if (bnavs[todayIndex]) {
+      showDay(todayIndex, bnavs[todayIndex]);
     }
   } catch (_) {}
 }
@@ -252,11 +243,7 @@ function hideInstallBanner() {
   if (b) b.remove();
 }
 
-/* ── SCROLL ACTIVE TAB INTO VIEW ── */
-function scrollActiveTabIntoView() {
-  const active = document.querySelector('.tab.active');
-  if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-}
+/* ── PWA: INSTALL PROMPT ── */
 
 /* ── COLLAPSIBLE SECTIONS ── */
 function initCollapsibleSections() {
@@ -435,23 +422,21 @@ function initSwipeNavigation() {
     // Or if inside the tracker row
     
     // Find currently active day index
-    const tabs = document.querySelectorAll('.tab');
+    const bnavs = document.querySelectorAll('.bnav-item');
     let currentIndex = -1;
-    tabs.forEach((t, i) => { if (t.classList.contains('active')) currentIndex = i; });
+    bnavs.forEach((b, i) => { if (b.classList.contains('active')) currentIndex = i; });
     if (currentIndex === -1) return;
 
     if (touchEndX < touchStartX) {
       // Swiped Left — Go to Next Day
-      if (currentIndex < tabs.length - 1) {
-        showDay(currentIndex + 1, tabs[currentIndex + 1]);
-        setTimeout(scrollActiveTabIntoView, 50);
+      if (currentIndex < bnavs.length - 1) {
+        showDay(currentIndex + 1, bnavs[currentIndex + 1]);
       }
     }
     if (touchEndX > touchStartX) {
       // Swiped Right — Go to Previous Day
       if (currentIndex > 0) {
-        showDay(currentIndex - 1, tabs[currentIndex - 1]);
-        setTimeout(scrollActiveTabIntoView, 50);
+        showDay(currentIndex - 1, bnavs[currentIndex - 1]);
       }
     }
   }
@@ -469,7 +454,4 @@ document.addEventListener('DOMContentLoaded', () => {
   initSwipeNavigation();
   setupInstallPrompt();
   registerSW();
-
-  // Scroll active tab into view after small delay (layout settle)
-  setTimeout(scrollActiveTabIntoView, 100);
 });

@@ -17,8 +17,9 @@
 <!-- Mobile-first enhancements (non-breaking) -->
 <link rel="stylesheet" href="./style-extra.css">
 <style>
-  .nutri-grid{grid-template-columns:1fr 1fr;}
-}
+  @media (max-width: 600px) {
+    .nutri-grid { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -211,16 +212,7 @@
 
 </div><!-- /overview-panel -->
 
-<!-- ══════════════ TABS ══════════════ -->
-<div class="tab-bar">
-  <button class="tab active" onclick="showDay(0,this)">Day 1 — Push</button>
-  <button class="tab" onclick="showDay(1,this)">Day 2 — Pull</button>
-  <button class="tab" onclick="showDay(2,this)">Day 3 — Legs+Shoulders</button>
-  <button class="tab" onclick="showDay(3,this)">Day 4 — Chest+Back</button>
-  <button class="tab" onclick="showDay(4,this)">Day 5 — Arms+Shoulders</button>
-  <button class="tab" onclick="showDay(5,this)">Day 6 — Legs+Cardio</button>
-  <button class="tab rest-tab" onclick="showDay(6,this)">Day 7 — Rest 🛑</button>
-</div>
+<!-- Navigation handled by bottom-nav -->
 
 <!-- ════════════════════════ DAY 1 ════════════════════════ -->
 <div class="day-panel" id="dp-0">
