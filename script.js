@@ -127,8 +127,33 @@ function registerSW() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service-worker.js')
-        .then(reg => console.log('[SW] Registered, scope:', reg.scope))
+        .then(reg => {
+          console.log('[SW] Registered, scope:', reg.scope);
+          
+          // Force update check on every load
+          reg.update();
+
+          // If a new worker is installed and waiting, notify or force reload
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'activated') {
+                console.log('[SW] New version activated. Reloading...');
+                window.location.reload();
+              }
+            });
+          });
+        })
         .catch(err => console.warn('[SW] Registration failed:', err));
+
+      // Listen for a message from the SW that it has claimed clients, just in case
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
     });
   }
 }
