@@ -21,8 +21,11 @@ function showOverview() {
   document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
   
   const panel = document.getElementById('overview-panel');
-  if (panel) panel.classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'auto' });
+  if (panel) {
+    panel.classList.add('active');
+    // For PWA polish: ensure we start at the very top of the overview
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
   exitFocusMode();
 }
 
@@ -83,14 +86,28 @@ function toggle(element) {
   }
 }
 
-/* ── RESTORE LAST OPENED DAY ON LOAD ── */
+/* ── AUTO-SELECT CURRENT DAY OR RESTORE ── */
 function restoreLastDay() {
   try {
     const saved = localStorage.getItem('samar_last_day');
     if (saved !== null) {
       const index = parseInt(saved, 10);
       const tab = document.querySelectorAll('.tab')[index];
-      if (tab) showDay(index, tab);
+      if (tab) {
+        showDay(index, tab);
+        return;
+      }
+    }
+    
+    // Fallback: Pick today's day of the week
+    const now = new Date();
+    // getDay() is 0 (Sun) to 6 (Sat)
+    // App index 0 is Mon, so we shift: (day + 6) % 7
+    const todayIndex = (now.getDay() + 6) % 7;
+    const todayTab = document.querySelectorAll('.tab')[todayIndex];
+    if (todayTab) {
+      // Don't vibrate on initial auto-select to avoid startle
+      showDay(todayIndex, todayTab);
     }
   } catch (_) {}
 }
