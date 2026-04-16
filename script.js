@@ -156,10 +156,90 @@ function scrollActiveTabIntoView() {
   if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
 }
 
+/* ── COLLAPSIBLE SECTIONS ── */
+function initCollapsibleSections() {
+
+  // Helper — wire up a title → content collapse toggle
+  function makeToggle(titleEl, contentEl) {
+    if (!titleEl || !contentEl) return;
+
+    // Inject collapse arrow
+    const arrow = document.createElement('span');
+    arrow.className = 'collapse-arrow';
+    arrow.setAttribute('aria-hidden', 'true');
+    titleEl.insertBefore(arrow, titleEl.firstChild);
+    titleEl.style.cursor = 'pointer';
+    titleEl.style.userSelect = 'none';
+
+    contentEl.classList.add('collapsible-body');
+
+    // Restore persisted state
+    const key = 'samar_collapse_' + titleEl.textContent.trim().substring(0, 30);
+    try {
+      if (localStorage.getItem(key) === '1') {
+        contentEl.classList.add('is-collapsed');
+        titleEl.classList.add('is-collapsed');
+      }
+    } catch (_) {}
+
+    titleEl.addEventListener('click', () => {
+      const collapsed = contentEl.classList.toggle('is-collapsed');
+      titleEl.classList.toggle('is-collapsed', collapsed);
+      try { localStorage.setItem(key, collapsed ? '1' : '0'); } catch (_) {}
+    });
+  }
+
+  // 1. Major section titles → next sibling or wrapped content
+  document.querySelectorAll('.section-title').forEach(title => {
+    const parent = title.parentElement;
+    let contentEl = null;
+
+    if (parent.classList.contains('nutrition-section')) {
+      // Wrap nutri-grid + nutri-note into one collapsible div
+      const wrapper = document.createElement('div');
+      wrapper.className = 'section-body-wrap';
+      const g = parent.querySelector('.nutri-grid');
+      const n = parent.querySelector('.nutri-note');
+      if (g) wrapper.appendChild(g);
+      if (n) wrapper.appendChild(n);
+      parent.appendChild(wrapper);
+      contentEl = wrapper;
+    } else if (parent.classList.contains('tracker-wrap')) {
+      contentEl = parent.querySelector('.tracker-grid');
+    } else {
+      contentEl = title.nextElementSibling;
+    }
+
+    makeToggle(title, contentEl);
+  });
+
+  // 2. Exercise group labels → collapse their exercises
+  document.querySelectorAll('.group-label').forEach(label => {
+    const group = label.parentElement;
+    const exercises = Array.from(group.querySelectorAll(':scope > .ex'));
+    if (!exercises.length) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'group-body-wrap';
+    exercises.forEach(ex => wrapper.appendChild(ex));
+    group.appendChild(wrapper);
+
+    makeToggle(label, wrapper);
+  });
+
+  // 3. Cardio block titles → collapse the week breakdown
+  document.querySelectorAll('.cardio-block').forEach(block => {
+    const title = block.querySelector('.cardio-title');
+    const weeks = block.querySelector('.cardio-weeks');
+    makeToggle(title, weeks);
+  });
+}
+
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
   restoreLastDay();
   buildTracker();
+  initCollapsibleSections();
   setupInstallPrompt();
   registerSW();
 

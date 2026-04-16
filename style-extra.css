@@ -245,3 +245,41 @@ html, body {
   50%  { transform: scale(1.12); }
   100% { transform: scale(1); }
 }
+
+/* ── COLLAPSIBLE SECTIONS ── */
+.collapse-arrow {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 11px;
+  color: var(--dim);
+  transition: transform 0.25s ease;
+}
+.collapse-arrow::before {
+  content: "▼";
+}
+.is-collapsed > .collapse-arrow {
+  transform: rotate(-90deg);
+}
+
+.collapsible-body {
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.35s ease, margin 0.3s ease, padding 0.3s ease;
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.collapsible-body.is-collapsed {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border: none !important;
+}
+
+/* Tweak cursor and hover for clickable headers */
+.section-title:hover, .group-label:hover, .cardio-title:hover {
+  opacity: 0.85;
+}
+
