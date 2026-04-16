@@ -407,13 +407,61 @@ footer{
 </style>
 </head>
 <body>
-<div class="wrap">
+<!-- ══════════════ NATIVE APP OVERLAYS ══════════════ -->
+<div id="sidebar-overlay"></div>
+<aside id="app-sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-title">Menu</span>
+    <button id="sidebar-close" aria-label="Close menu">✕</button>
+  </div>
+  <div class="sidebar-links">
+    <div class="sb-label">Overview</div>
+    <a href="#" class="sb-link" onclick="closeSidebar(); document.querySelector('.hero').scrollIntoView();">Profile & Stats</a>
+    <a href="#" class="sb-link" onclick="closeSidebar(); document.querySelector('.phases').scrollIntoView();">Training Phases</a>
+    <a href="#" class="sb-link" onclick="closeSidebar(); document.querySelector('.tracker-wrap').scrollIntoView();">Weekly Tracker</a>
+    <div class="sb-label">Settings</div>
+    <div class="sb-item">
+      <span>Theme</span>
+      <button id="theme-toggle" aria-label="Toggle theme">
+        <span class="icon-sun">☀️</span><span class="icon-moon">🌙</span>
+      </button>
+    </div>
+  </div>
+</aside>
 
-<!-- ══════════════ THEME TOGGLE ══════════════ -->
-<button id="theme-toggle" aria-label="Toggle theme">
-  <span class="icon-sun">☀️</span>
-  <span class="icon-moon">🌙</span>
-</button>
+<!-- ══════════════ APP HEADER (FIXED) ══════════════ -->
+<header id="app-header">
+  <button id="menu-btn" aria-label="Open menu">☰</button>
+  <span class="app-header-title">Samar Raj</span>
+  <div style="width:24px"></div><!-- Spacer for centering -->
+</header>
+
+<div class="wrap" id="main-scroll-wrap">
+
+<!-- ══════════════ BOTTOM NAVIGATION (FIXED) ══════════════ -->
+<nav id="bottom-nav">
+  <button class="bnav-item active" onclick="showDay(0,null,'bnav')">
+    <span class="bn-i">1</span><span class="bn-l">Push</span>
+  </button>
+  <button class="bnav-item" onclick="showDay(1,null,'bnav')">
+    <span class="bn-i">2</span><span class="bn-l">Pull</span>
+  </button>
+  <button class="bnav-item" onclick="showDay(2,null,'bnav')">
+    <span class="bn-i">3</span><span class="bn-l">Legs</span>
+  </button>
+  <button class="bnav-item" onclick="showDay(3,null,'bnav')">
+    <span class="bn-i">4</span><span class="bn-l">Che/Ba</span>
+  </button>
+  <button class="bnav-item" onclick="showDay(4,null,'bnav')">
+    <span class="bn-i">5</span><span class="bn-l">Arm/Sh</span>
+  </button>
+  <button class="bnav-item" onclick="showDay(5,null,'bnav')">
+    <span class="bn-i">6</span><span class="bn-l">Le/Ca</span>
+  </button>
+  <button class="bnav-item bn-rest" onclick="showDay(6,null,'bnav')">
+    <span class="bn-i">R</span><span class="bn-l">Rest</span>
+  </button>
+</nav>
 
 <!-- ══════════════ HERO ══════════════ -->
 <div class="hero">

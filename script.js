@@ -5,21 +5,54 @@
 
 'use strict';
 
+/* ── SCROLL MEMORY ── */
+const scrollMap = new Map();
+
+/* ── HAPTICS ── */
+function vibrateTap() {
+  if (navigator.vibrate) try { navigator.vibrate(10); } catch (_) {}
+}
+
 /* ── TAB / DAY SWITCHER ── */
-function showDay(index, element) {
+function showDay(index, element, source) {
+  vibrateTap();
+
+  // Save scroll position for currently active day before switching
+  const currentTab = document.querySelector('.tab.active');
+  if (currentTab) {
+    const currentIndex = Array.from(document.querySelectorAll('.tab')).indexOf(currentTab);
+    scrollMap.set(currentIndex, window.scrollY);
+  }
+
   document.querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
 
   const panel = document.getElementById('dp-' + index);
   if (panel) panel.classList.add('active');
-  if (element) element.classList.add('active');
+  
+  // Sync Top Tabs
+  const topTabs = document.querySelectorAll('.tab');
+  if (topTabs[index]) topTabs[index].classList.add('active');
+
+  // Sync Bottom Nav
+  const bnavs = document.querySelectorAll('.bnav-item');
+  if (bnavs[index]) bnavs[index].classList.add('active');
 
   // Persist last opened day
   try { localStorage.setItem('samar_last_day', index); } catch (_) {}
+
+  // Restore scroll or go top
+  if (scrollMap.has(index)) {
+    window.scrollTo({ top: scrollMap.get(index), behavior: 'auto' });
+  } else {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
 }
 
 /* ── EXERCISE EXPAND / COLLAPSE ── */
 function toggle(element) {
+  vibrateTap();
   element.classList.toggle('open');
 }
 
@@ -252,6 +285,73 @@ function initTheme() {
   });
 }
 
+/* ── SIDEBAR LOGIC ── */
+function openSidebar() {
+  vibrateTap();
+  document.getElementById('app-sidebar').classList.add('active');
+  document.getElementById('sidebar-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('app-sidebar').classList.remove('active');
+  document.getElementById('sidebar-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+function initSidebar() {
+  const menuBtn = document.getElementById('menu-btn');
+  const overlay = document.getElementById('sidebar-overlay');
+  const closeBtn = document.getElementById('sidebar-close');
+
+  if (menuBtn) menuBtn.addEventListener('click', openSidebar);
+  if (overlay) overlay.addEventListener('click', closeSidebar);
+  if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+
+  // Edge Swipe Right to Open Sidebar
+  let sbStart = 0;
+  document.addEventListener('touchstart', e => {
+    if (e.changedTouches[0].clientX < 30) sbStart = e.changedTouches[0].screenX;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (sbStart > 0 && e.changedTouches[0].screenX - sbStart > 50) openSidebar();
+    sbStart = 0;
+  }, { passive: true });
+}
+
+/* ── FOCUS MODE ── */
+function initFocusMode() {
+  let lastScrollY = window.scrollY;
+  window.addEventListener('scroll', () => {
+    const currentScrollY = window.scrollY;
+    // Scroll down past 100px -> hide Nav (Focus mode)
+    if (currentScrollY > 100 && currentScrollY > lastScrollY) {
+      document.body.classList.add('focus-mode');
+    } 
+    // Scroll up -> show Nav
+    else if (currentScrollY < lastScrollY) {
+      document.body.classList.remove('focus-mode');
+    }
+    lastScrollY = currentScrollY;
+  }, { passive: true });
+}
+
+/* ── PULL TO REFRESH ── */
+function initPullToRefresh() {
+  let touchStartPtr = 0;
+  document.addEventListener('touchstart', (e) => {
+    if (window.scrollY === 0) touchStartPtr = e.touches[0].screenY;
+  }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (window.scrollY === 0 && touchStartPtr > 0) {
+      const touchEndPtr = e.changedTouches[0].screenY;
+      if (touchEndPtr - touchStartPtr > 150) {
+        vibrateTap();
+        location.reload();
+      }
+    }
+    touchStartPtr = 0;
+  }, { passive: true });
+}
+
 /* ── SWIPE NAVIGATION ── */
 function initSwipeNavigation() {
   let touchStartX = 0;
@@ -300,6 +400,9 @@ function initSwipeNavigation() {
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
+  initSidebar();
+  initFocusMode();
+  initPullToRefresh();
   restoreLastDay();
   buildTracker();
   initCollapsibleSections();
