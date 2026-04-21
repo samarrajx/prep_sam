@@ -157,6 +157,83 @@ function buildTracker() {
   });
 }
 
+/* ── SET TRACKER ── */
+function initSetTracker() {
+  // Sunday Reset Logic
+  checkSundayReset();
+
+  const dayPanels = document.querySelectorAll('.day-panel[id^="dp-"]');
+  dayPanels.forEach((panel, dayIdx) => {
+    const exercises = panel.querySelectorAll('.ex');
+    exercises.forEach((ex, exIdx) => {
+      const setsBadge = ex.querySelector('.ex-sets');
+      if (!setsBadge) return;
+
+      // Extract set count (e.g., "4x8-12" -> 4)
+      const match = setsBadge.textContent.match(/^(\d+)/);
+      if (!match) return;
+      const setCount = parseInt(match[1], 10);
+
+      // Find detail view to inject into
+      const detail = ex.querySelector('.ex-detail');
+      if (!detail) return;
+
+      const tracker = document.createElement('div');
+      tracker.className = 'sets-tracker';
+      tracker.innerHTML = '<div class="sets-header">Sets Completed</div>';
+
+      // Load existing state
+      let savedState = {};
+      try { savedState = JSON.parse(localStorage.getItem('samar_sets') || '{}'); } catch (_) {}
+
+      for (let i = 0; i < setCount; i++) {
+        const key = `${dayIdx}_${exIdx}_${i}`;
+        const isDone = !!savedState[key];
+
+        const btn = document.createElement('div');
+        btn.className = 'set-check' + (isDone ? ' done' : '');
+        btn.textContent = i + 1;
+        btn.setAttribute('role', 'checkbox');
+        btn.setAttribute('aria-checked', isDone ? 'true' : 'false');
+
+        btn.onclick = (e) => {
+          e.stopPropagation(); // Don't toggle the exercise collapse
+          vibrateTap();
+          btn.classList.toggle('done');
+          const done = btn.classList.contains('done');
+          btn.setAttribute('aria-checked', done ? 'true' : 'false');
+
+          // Save state
+          try {
+            let cur = JSON.parse(localStorage.getItem('samar_sets') || '{}');
+            if (done) cur[key] = true; else delete cur[key];
+            localStorage.setItem('samar_sets', JSON.stringify(cur));
+          } catch (_) {}
+        };
+
+        tracker.appendChild(btn);
+      }
+
+      // Inject at the top of detail view
+      detail.insertBefore(tracker, detail.firstChild);
+    });
+  });
+}
+
+function checkSundayReset() {
+  const now = new Date();
+  const day = now.getDay(); // 0 is Sunday
+  const todayStr = now.toDateString();
+  const lastReset = localStorage.getItem('samar_last_reset');
+
+  // If it's Sunday and we haven't reset today
+  if (day === 0 && lastReset !== todayStr) {
+    localStorage.removeItem('samar_sets');
+    localStorage.setItem('samar_last_reset', todayStr);
+    console.log('[App] Sunday Reset: Set tracking cleared.');
+  }
+}
+
 /* ── PWA: SERVICE WORKER REGISTRATION ── */
 function registerSW() {
   if ('serviceWorker' in navigator) {
@@ -450,6 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPullToRefresh();
   restoreLastDay();
   buildTracker();
+  initSetTracker();
   initCollapsibleSections();
   initSwipeNavigation();
   setupInstallPrompt();
